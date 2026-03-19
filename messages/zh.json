@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "login": "登录",
+    "dashboard": "我的历史",
+    "logout": "退出登录"
+  },
+  "home": {
+    "title": "一键提取多平台内容",
+    "subtitle": "从 YouTube、抖音、小红书、Twitter、Instagram 等平台下载视频或提取文案",
+    "placeholder": "粘贴视频/帖子链接...",
+    "extract": "提取",
+    "extracting": "提取中...",
+    "supported": "支持的平台"
+  },
+  "result": {
+    "download": "下载视频",
+    "copy": "复制文案",
+    "copied": "已复制！",
+    "video": "视频",
+    "transcript": "文案"
+  },
+  "auth": {
+    "saveHistory": "登录后可保存历史记录",
+    "saveHistoryDesc": "登录后可保存您的提取历史，随时查看和重新下载。",
+    "loginNow": "立即登录",
+    "notNow": "暂不",
+    "loginWith": "使用 Google 登录"
+  },
+  "dashboard": {
+    "title": "提取历史",
+    "empty": "暂无提取记录",
+    "reExtract": "重新提取",
+    "download": "下载视频",
+    "copyTranscript": "复制文案",
+    "video": "视频",
+    "transcript": "文案",
+    "both": "视频+文案"
+  },
+  "errors": {
+    "invalidUrl": "无效或不支持的链接",
+    "extractFailed": "提取失败，请重试",
+    "unsupportedPlatform": "暂不支持该平台"
+  },
+  "footer": {
+    "about": "关于我们",
+    "terms": "使用条款",
+    "privacy": "隐私政策",
+    "feedback": "意见反馈"
+  },
+  "platforms": {
+    "youtube": { "name": "YouTube", "type": "视频+文案" },
+    "tiktok": { "name": "TikTok", "type": "视频" },
+    "twitter": { "name": "Twitter/X", "type": "视频+文案" },
+    "instagram": { "name": "Instagram", "type": "视频" },
+    "facebook": { "name": "Facebook", "type": "视频" },
+    "xiaohongshu": { "name": "小红书", "type": "视频" },
+    "douyin": { "name": "抖音", "type": "视频" }
+  }
+}

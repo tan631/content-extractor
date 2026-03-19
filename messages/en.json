@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "login": "Login",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "home": {
+    "title": "Extract Content from Any Platform",
+    "subtitle": "Download videos and extract transcripts from YouTube, TikTok, Twitter, Instagram and more",
+    "placeholder": "Paste video/post link...",
+    "extract": "Extract",
+    "extracting": "Extracting...",
+    "supported": "Supported Platforms"
+  },
+  "result": {
+    "download": "Download Video",
+    "copy": "Copy Transcript",
+    "copied": "Copied!",
+    "video": "Video",
+    "transcript": "Transcript"
+  },
+  "auth": {
+    "saveHistory": "Login to save history",
+    "saveHistoryDesc": "Sign in to save your extraction history and access it anytime.",
+    "loginNow": "Login Now",
+    "notNow": "Not Now",
+    "loginWith": "Continue with Google"
+  },
+  "dashboard": {
+    "title": "My History",
+    "empty": "No extraction history yet",
+    "reExtract": "Re-extract",
+    "download": "Download",
+    "copyTranscript": "Copy Transcript",
+    "video": "Video",
+    "transcript": "Transcript",
+    "both": "Video + Transcript"
+  },
+  "errors": {
+    "invalidUrl": "Invalid or unsupported URL",
+    "extractFailed": "Extraction failed, please try again",
+    "unsupportedPlatform": "This platform is not supported yet"
+  },
+  "footer": {
+    "about": "About",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "feedback": "Feedback"
+  },
+  "platforms": {
+    "youtube": { "name": "YouTube", "type": "Video + Transcript" },
+    "tiktok": { "name": "TikTok", "type": "Video" },
+    "twitter": { "name": "Twitter/X", "type": "Video + Transcript" },
+    "instagram": { "name": "Instagram", "type": "Video" },
+    "facebook": { "name": "Facebook", "type": "Video" },
+    "xiaohongshu": { "name": "Xiaohongshu", "type": "Video" },
+    "douyin": { "name": "Douyin", "type": "Video" }
+  }
+}
