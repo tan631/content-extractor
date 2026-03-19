@@ -1,9 +1,3 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { join } from 'path';
-
-const execAsync = promisify(exec);
-
 export type Platform = 'youtube' | 'tiktok' | 'twitter' | 'instagram' | 'facebook' | 'xiaohongshu' | 'douyin' | 'unknown';
 
 export interface ExtractResult {
@@ -70,13 +64,11 @@ function parseCaptionJson3(data: { events?: Array<{ segs?: Array<{ utf8?: string
 
 async function fetchYouTubeTranscript(videoId: string): Promise<string | undefined> {
   try {
-    const scriptPath = join(process.cwd(), 'scripts/get_transcript.py');
-    const { stdout } = await execAsync(
-      `python3 "${scriptPath}" "${videoId}" "zh-Hans,zh-Hant,zh,en"`,
-      { timeout: 20000 }
-    );
-    const result = JSON.parse(stdout.trim()) as { transcript?: string; error?: string };
-    return result.transcript || undefined;
+    const apiBase = process.env.TRANSCRIPT_API_URL || 'http://localhost:3001';
+    const res = await fetch(`${apiBase}/transcript?videoId=${videoId}`, { signal: AbortSignal.timeout(20000) });
+    if (!res.ok) return undefined;
+    const data = await res.json() as { transcript?: string; error?: string };
+    return data.transcript || undefined;
   } catch {
     return undefined;
   }
