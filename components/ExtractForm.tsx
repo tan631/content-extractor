@@ -10,16 +10,28 @@ interface ExtractResult {
   videoUrl?: string;
   thumbnail?: string;
   transcript?: string;
+  title?: string;
   contentType: 'video' | 'transcript' | 'both';
 }
 
+const KNOWN_ERRORS = ['invalidUrl', 'extractFailed', 'unsupportedPlatform'] as const;
+type ErrorKey = typeof KNOWN_ERRORS[number];
+
 export default function ExtractForm() {
-  const t = useTranslations();
+  const t = useTranslations('home');
+  const tErr = useTranslations('errors');
   const { data: session } = useSession();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [error, setError] = useState('');
+
+  function getErrorMessage(key: string): string {
+    if (KNOWN_ERRORS.includes(key as ErrorKey)) {
+      return tErr(key as ErrorKey);
+    }
+    return tErr('extractFailed');
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,14 +51,13 @@ export default function ExtractForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        const errKey = data.error as string;
-        setError(t(`errors.${errKey}` as Parameters<typeof t>[0]) || t('errors.extractFailed'));
+        setError(getErrorMessage(data.error));
         return;
       }
 
       setResult(data);
     } catch {
-      setError(t('errors.extractFailed'));
+      setError(tErr('extractFailed'));
     } finally {
       setLoading(false);
     }
@@ -56,10 +67,10 @@ export default function ExtractForm() {
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
-          type="url"
+          type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder={t('home.placeholder')}
+          placeholder={t('placeholder')}
           className="flex-1 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
           disabled={loading}
         />
@@ -68,7 +79,7 @@ export default function ExtractForm() {
           disabled={loading || !url.trim()}
           className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
         >
-          {loading ? t('home.extracting') : t('home.extract')}
+          {loading ? t('extracting') : t('extract')}
         </button>
       </form>
 

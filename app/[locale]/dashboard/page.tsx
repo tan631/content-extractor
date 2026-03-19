@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { useTranslations } from 'next-intl';
 import HistoryList from '@/components/HistoryList';
 
@@ -26,12 +27,13 @@ function DashboardContent({ items }: { items: unknown[] }) {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     redirect('/');
   }
 
-  const items = await getHistory(session.user.id);
+  const userId = (session.user as { id?: string }).id || session.user.email || '';
+  const items = await getHistory(userId);
 
   return <DashboardContent items={items} />;
 }

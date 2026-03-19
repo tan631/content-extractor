@@ -8,10 +8,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'invalidUrl' }, { status: 400 });
     }
 
-    const result = await extractContent(url);
+    const result = await extractContent(url.trim());
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'extractFailed';
+    console.error('[extract] error:', message, err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

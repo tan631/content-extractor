@@ -1,11 +1,10 @@
-export type Platform = 'youtube' | 'tiktok' | 'twitter' | 'instagram' | 'facebook' | 'xiaohongshu' | 'douyin' | 'unknown';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { join } from 'path';
 
-export interface CobaltResult {
-  status: 'tunnel' | 'redirect' | 'picker' | 'error';
-  url?: string;
-  picker?: Array<{ url: string; thumb?: string }>;
-  error?: { code: string };
-}
+const execAsync = promisify(exec);
+
+export type Platform = 'youtube' | 'tiktok' | 'twitter' | 'instagram' | 'facebook' | 'xiaohongshu' | 'douyin' | 'unknown';
 
 export interface ExtractResult {
   platform: Platform;
@@ -32,32 +31,101 @@ export function detectPlatform(url: string): Platform {
   }
 }
 
-export async function extractContent(url: string): Promise<ExtractResult> {
-  const platform = detectPlatform(url);
-  if (platform === 'unknown') {
-    throw new Error('unsupportedPlatform');
+function extractYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'youtu.be') return u.pathname.slice(1).split('?')[0];
+    const shortsMatch = u.pathname.match(/\/shorts\/([a-zA-Z0-9_-]+)/);
+    if (shortsMatch) return shortsMatch[1];
+    return u.searchParams.get('v');
+  } catch {
+    return null;
   }
+}
 
-  const res = await fetch('https://cobalt.tools/api', {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ url, videoQuality: '1080', filenameStyle: 'pretty' })
-  });
+// Parse XML caption format to plain text
+function parseCaptionXml(xml: string): string {
+  return xml
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  if (!res.ok) throw new Error('extractFailed');
+// Parse JSON3 caption format to plain text
+function parseCaptionJson3(data: { events?: Array<{ segs?: Array<{ utf8?: string }> }> }): string {
+  return (data.events ?? [])
+    .flatMap(e => e.segs ?? [])
+    .map(s => s.utf8 ?? '')
+    .join('')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  const data: CobaltResult = await res.json();
+async function fetchYouTubeTranscript(videoId: string): Promise<string | undefined> {
+  try {
+    const scriptPath = join(process.cwd(), 'scripts/get_transcript.py');
+    const { stdout } = await execAsync(
+      `python3 "${scriptPath}" "${videoId}" "zh-Hans,zh-Hant,zh,en"`,
+      { timeout: 20000 }
+    );
+    const result = JSON.parse(stdout.trim()) as { transcript?: string; error?: string };
+    return result.transcript || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
-  if (data.status === 'error') throw new Error('extractFailed');
+async function extractYouTube(url: string): Promise<ExtractResult> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  const videoId = extractYouTubeId(url);
+  if (!videoId) throw new Error('invalidUrl');
 
-  const videoUrl = data.url || data.picker?.[0]?.url;
+  // Fetch video metadata via YouTube Data API v3
+  const metaRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`
+  );
+  const meta = await metaRes.json() as {
+    items?: Array<{
+      snippet: {
+        title: string;
+        thumbnails: {
+          maxres?: { url: string };
+          high?: { url: string };
+          medium?: { url: string };
+        };
+      };
+    }>;
+  };
+
+  if (!meta.items?.length) throw new Error('extractFailed');
+
+  const snippet = meta.items[0].snippet;
+  const thumbnail =
+    snippet.thumbnails.maxres?.url ??
+    snippet.thumbnails.high?.url ??
+    snippet.thumbnails.medium?.url;
+
+  const transcript = await fetchYouTubeTranscript(videoId);
 
   return {
-    platform,
-    videoUrl,
-    contentType: videoUrl ? 'video' : 'transcript'
+    platform: 'youtube',
+    thumbnail,
+    title: snippet.title,
+    transcript,
+    contentType: transcript ? 'transcript' : 'video',
   };
+}
+
+export async function extractContent(url: string): Promise<ExtractResult> {
+  const platform = detectPlatform(url);
+  if (platform === 'unknown') throw new Error('unsupportedPlatform');
+  if (platform === 'youtube') return extractYouTube(url);
+  throw new Error('unsupportedPlatform');
 }
